@@ -5,31 +5,28 @@ module.exports = function(homebridge) {
     Service = homebridge.hap.Service;
     Characteristic = homebridge.hap.Characteristic;
 
-    homebridge.registerAccessory("homebridge-weather", "Weather", WeatherAccessory);
-
+    homebridge.registerAccessory("homebridge-wolfhaus", "Wolfhaus", WolfhausAccessory);
 }
 
-function WeatherAccessory(log, config) {
-    this.log = log;
-    this.log('Adding WeatherAccessory');
-    this.name = config.name;
-    this.url = config.url;
-    
-    this.weatherService = new Service.TemperatureSensor(this.name);
-    this.weatherService
-        .getCharacteristic(Characteristic.CurrentTemperature)
-        .on('get', this.getTemperature.bind(this));
-}
+class WolfhausAccessory {
+    constructor(log, config) {
+        this.log = log;
+        this.log('Adding WolfhausAccessory');
+        this.name = config.name;
+        this.url = config.url;
 
-WeatherAccessory.prototype.getTemperature = function (callback) {
-    this.log('Getting temperature');
-    request.get(this.url)
-        .then(result => {
-            this.log('Current: ' + result.body.temperature);
-            callback(null, result.body.temperature);
-        });
-}
+        this.wolfhausTemperatureService = new Service.TemperatureSensor(this.name);
+        this.wolfhausTemperatureService
+            .getCharacteristic(Characteristic.CurrentTemperature)
+            .on('get', this.getCurrentTemperature);
+    }
 
-WeatherAccessory.prototype.getServices = function() {
-    return [this.weatherService];
+    getServices = () => {
+        return [this.wolfhausTemperatureService];
+    }
+
+    getCurrentTemperature = (callback) => {
+        request.get(this.url)
+            .then(result => callback(null, result.body.temperature));
+    }
 }
